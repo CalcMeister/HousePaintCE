@@ -1,0 +1,226 @@
+[i]HPAINT
+Begin
+1->LEV
+CloseAll
+Open("HPDATA","r+")->HPD
+If HPD=0
+	Open("HPDATA","w+")->HPD
+	Write(^^oLEV,3,1,HPD
+Else
+	Read(^^oLEV,3,1,HPD
+End
+Call SPRITE
+SetTextTransparentColor(0
+SetTextFGColor(255
+SetTextBGColor(0
+Alloc(300)->MAP
+SetTransparentColor(248
+1->MEN
+0->MENSTATE
+Repeat MENSTATE=1
+	If ESC=1
+		LEV+1->LEV
+	End
+	If MEN=1
+		Call MENU
+	Else
+		Call NEW
+	End
+	If MENSTATE=3
+		1->LEV
+	End
+	0->ESC
+	0->MENSTATE
+	FillScreen(159
+	For(A,0,YMAX
+		For(B,0,XMAX
+			ScaledSprite_NoClip(***{SPR+*{MAP+A*(XMAX+1)+B}*3+(*{MAP+A*(XMAX+1)+B}=2)*randInt(0,2)*3},XSTA+8*SCA*B,YSTA+8*SCA*A,SCA,SCA
+		End
+	End
+	If MEN=1
+		SetTextFGColor(8
+		For(A,0,2,2
+			SetTextScale(3,4
+			PrintStringXY("HousePaint CE",21-A,21-A
+			SetTextScale(2,2
+			PrintStringXY("Continue",50-A,98-A
+			PrintStringXY("New Game",50-A,130-A
+			PrintStringXY("Shop",50-A,162-A
+			PrintStringXY("Quit",50-A,194-A
+			SetTextFGColor(95
+		End
+		SetTextFGColor(255
+		2->X
+		4->Y
+	Else
+		SetTextScale(SCA,SCA
+		PrintStringXY("Level",XSTA,YSTA
+		SetTextXY(XSTA+48*SCA,YSTA
+		PrintInt(LEV,1+(LEV/10!=0)+(LEV/100!=0)
+		1->X->Y
+	End
+	ScaledTransparentSprite_NoClip(***{SPR},XSTA+X*8*SCA,YSTA+Y*8*SCA,SCA,SCA
+	3->*{MAP}
+	Repeat ESC or getKey(15) or MENSTATE
+		Repeat K
+			getKey->K
+		End
+		1-(K=1)+(K=4)->YA
+		1-(K=3)+(K=2)->XA
+		While (*{MAP+(XMAX+1)*(Y+1-YA)+X+1-XA}=2 or *{MAP+(XMAX+1)*(Y+1-YA)+X+1-XA}=255) and Y+2-YA!=0 and Y+1-YA!=YMAX+1 and X+2-XA!=0 and X+1-XA!=XMAX+1 and K<5 and ESC=0
+			255->*{MAP+(XMAX+1)*Y+X}
+			1->ESC
+			For(A,0,(XMAX+1)*(YMAX+1)-1
+				If *{MAP+A}=2
+					0->ESC
+				End
+			End
+			X->XO
+			Y->YO
+			X+1-XA->X
+			Y+1-YA->Y
+			Pause 10
+			For(A,0,8*SCA-1,SCA
+				ScaledTransparentSprite_NoClip(***{SPR},XSTA+8*SCA*X+(X-XO)*(A-7*SCA),YSTA+8*SCA*Y+(Y-YO)*(A-7*SCA),SCA,SCA
+			End
+		End
+		If MEN=1
+			If X=19
+				If Y=6
+					2->MENSTATE
+				End
+				If Y=8
+					3->MENSTATE
+				End
+				If Y=10
+					4->MENSTATE
+				End
+				If Y=12
+					1->MENSTATE
+				End
+			End
+		End
+	End
+	If MENSTATE>3 or K=15
+		1->MEN
+	Else
+		0->MEN
+	End
+End
+Rewind(HPD
+Write(^^oLEV,3,1,HPD
+det(1
+Return
+Lbl MENU
+19->XMAX
+14->YMAX
+2->SCA
+0->XSTA
+0->YSTA
+For(A,0,(XMAX+1)*(YMAX+1)-1
+	1->*{MAP+A}
+End
+For(A,1,XMAX-1
+	6->*{MAP+A}
+	6->*{MAP+A+YMAX*(XMAX+1)}
+End
+For(A,1,YMAX-1
+	5->*{MAP+A*(XMAX+1)}
+	5->*{MAP+A*(XMAX+1)+XMAX}
+End
+7->*{MAP}->*{MAP+XMAX}->*{MAP+YMAX*(XMAX+1)}->*{MAP+(XMAX+1)*(YMAX+1)-1}
+For(A,0,3
+	For(B,0,3+A
+		2->*{MAP+B-A+(6+2*A)*(XMAX+1)+16}
+	End
+	2->*{MAP-A+(5+2*A)*(XMAX+1)+17}
+End
+For(A,2,17
+	2->*{MAP+4*(XMAX+1)+A}
+End
+For(A,4,12
+	2->*{MAP+A*(XMAX+1)+12}
+End
+2->*{MAP+12*(XMAX+1)+13}
+Return
+Lbl NEW
+randInt(0,255)->COL
+SetColor(COL
+randInt(5,19)->XMAX
+randInt(5,14)->YMAX
+40/(XMAX+1)->XSCA
+30/(YMAX+1)->YSCA
+min(XSCA,YSCA)->SCA
+(320-8*SCA*(XMAX+1))/2->XSTA
+(240-8*SCA*(YMAX+1))/2->YSTA
+Repeat AMO>((XMAX+1)*(YMAX+1))/5
+	For(A,0,(YMAX+1)*(XMAX+1)-1
+		2-(randInt(1,6)=1)->*{MAP+A}
+	End
+	For(A,1,XMAX-1
+		6->*{MAP+A}
+		6->*{MAP+YMAX*(XMAX+1)+A}
+	End
+	For(A,1,YMAX-1
+		5->*{MAP+A*(XMAX+1)}
+		5->*{MAP+A*(XMAX+1)+XMAX}
+	End
+	7->*{MAP}->*{MAP+XMAX}->*{MAP+YMAX*(XMAX+1)}->*{MAP+(XMAX+1)*(YMAX+1)-1}
+	1->X->Y
+	0->XA->YA
+	For(I,1,1000
+		randInt(1,4)->K
+		1-(K=1)+(K=4)->YA
+		1-(K=3)+(K=2)->XA
+		While (*{MAP+(XMAX+1)*(Y+1-YA)+X+1-XA}=2 or *{MAP+(XMAX+1)*(Y+1-YA)+X+1-XA}=255) and Y+2-YA!=0 and Y+1-YA!=YMAX+1 and X+2-XA!=0 and X+1-XA!=XMAX+1
+			255->*{MAP+(XMAX+1)*Y+X}
+			X->XO
+			Y->YO
+			X+1-XA->X
+			Y+1-YA->Y
+		End
+	End
+	0->AMO
+	For(A,0,(XMAX+1)*(YMAX+1)-1
+		If *{MAP+A}=255
+			2->*{MAP+A}
+			AMO+1->AMO
+		Else
+			If *{MAP+A}=2
+				1->*{MAP+A}
+			End
+		End
+	End
+End
+Return
+Lbl DEBUG
+FillScreen(0
+For(A,0,YMAX
+	For(B,0,XMAX
+		SetTextXY(B*10,A*10
+		PrintInt(*{MAP+A*(XMAX+1)+B},1
+	End
+End
+Pause 
+Return
+Lbl SPRITE
+Alloc(300)->SPR
+[i]Cursor
+DefineSprite(8,8,"533275535332325353A2A24161C4A23232A2A26141A2A2323241416161414132536161616161615353A2A26141A2A27575A2A26161A2A2755332323253323253"->***{SPR}
+[i]"E0E0E0E0E0E0E0E0E0E2E2C6C6E2E2E0E0E2C66666C6E2E0E0C666515166C6E0E0C666515166C6E0E0E2C66666C6E2E0E0E2E2C6C6E2E2E0E0E0E0E0E0E0E0E0"
+[i]Brick
+DefineSprite(8,8,"ED80A080A080A080EDA080A080A080A0ED80A080A080A080EDEDEDEDEDEDEDEDA080A080ED80A08080A080A0EDA080A0A080A080ED80A080EDEDEDEDEDEDEDED"->***{SPR+3}
+[i]Wall
+DefineSprite(8,8,"DE94B5B5949494DEB594DEDEDE94B5B5B5B59494DE94B594DEDEDEB5DE9494DEB5B5B5DEB594B5DE94B594DE94B5B59494DE9494DEB5B5B594B594DEB5DEB5B5"->***{SPR+6}
+[i]Wall 2
+DefineSprite(8,8,"DEDE94B5B5DE94B5DE94DEDE94B594DE9494B5DEDE94949494DE94B594DE94DEB594DEDE9494DEDE9494DEDEB59494DE94B59494DEB5B5B5949494DEDEDEB594"->***{SPR+9}
+[i]Wall 3
+DefineSprite(8,8,"B5DEDEB5B5DEDEDEB5B594B5DE94B5B594DEDEB5B594B5B5DEDEB5DEB5B5B5DEDE94DEB5B59494B5B594B594B59494DEDE94DE9494DE94B5DEDEB594B5B5B5DE"->***{SPR+12}
+[i]I-beam V
+DefineSprite(8,8,"084A4A4A4A4A4A08084A4A4A4A4A4A08084A4A4A4A4A4A08084A4A08084A4A08084A4A08084A4A08084A4A4A4A4A4A08084A4A4A4A4A4A08084A4A4A4A4A4A08"->***{SPR+15}
+[i]I-beam H
+DefineSprite(8,8->***{SPR+18}
+RotateSpriteC(***{SPR+15},***{SPR+18}
+[i]I-beam C
+DefineSprite(8,8,"080808080808080808084A4A4A4A0808084A4A4A4A4A4A08084A4A4A4A4A4A08084A4A4A4A4A4A08084A4A4A4A4A4A0808084A4A4A4A08080808080808080808"->***{SPR+21}
+Return
