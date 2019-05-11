@@ -13,7 +13,7 @@ Call SPRITE
 SetTextTransparentColor(0
 SetTextFGColor(255
 SetTextBGColor(0
-Alloc(300)->MAP
+Alloc(1200)->MAP
 SetTransparentColor(248
 1->MEN
 0->MENSTATE
@@ -68,20 +68,20 @@ Repeat MENSTATE=1
 		1-(K=1)+(K=4)->YA
 		1-(K=3)+(K=2)->XA
 		While (*{MAP+(XMAX+1)*(Y+1-YA)+X+1-XA}=2 or *{MAP+(XMAX+1)*(Y+1-YA)+X+1-XA}=255) and Y+2-YA!=0 and Y+1-YA!=YMAX+1 and X+2-XA!=0 and X+1-XA!=XMAX+1 and K<5 and ESC=0
+			X->XO
+			Y->YO
+			X+1-XA->X
+			Y+1-YA->Y
+			For(A,0,8*SCA-1,SCA
+				ScaledTransparentSprite_NoClip(***{SPR},XSTA+8*SCA*X+(X-XO)*(A-7*SCA),YSTA+8*SCA*Y+(Y-YO)*(A-7*SCA),SCA,SCA
+				Pause 1
+			End
 			255->*{MAP+(XMAX+1)*Y+X}
 			1->ESC
 			For(A,0,(XMAX+1)*(YMAX+1)-1
 				If *{MAP+A}=2
 					0->ESC
 				End
-			End
-			X->XO
-			Y->YO
-			X+1-XA->X
-			Y+1-YA->Y
-			Pause 10
-			For(A,0,8*SCA-1,SCA
-				ScaledTransparentSprite_NoClip(***{SPR},XSTA+8*SCA*X+(X-XO)*(A-7*SCA),YSTA+8*SCA*Y+(Y-YO)*(A-7*SCA),SCA,SCA
 			End
 		End
 		If MEN=1
